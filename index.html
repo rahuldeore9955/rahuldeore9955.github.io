@@ -15,6 +15,22 @@
       align-items: center;
       justify-content: center;
       perspective: 800px;
+      position: relative;
+    }
+
+    /* Torch spotlight effect */
+    #torch {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(
+        circle 400px at 50% 40%,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(200, 200, 200, 0.1) 30%,
+        rgba(100, 100, 100, 0.04) 50%,
+        transparent 70%
+      );
+      z-index: 0;
     }
 
     #box {
@@ -23,6 +39,7 @@
       position: relative;
       transform-style: preserve-3d;
       cursor: grab;
+      z-index: 1;
     }
 
     #box:active {
@@ -34,20 +51,66 @@
       position: absolute;
       width: 200px;
       height: 200px;
-      border: 3px solid #fff;
-      background: rgba(30, 30, 30, 0.9);
-      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+      border: 1px solid rgba(255,255,255,0.4);
     }
 
-    .front  { transform: translateZ(100px); }
-    .back   { transform: rotateY(180deg) translateZ(100px); }
-    .right  { transform: rotateY(90deg) translateZ(100px); }
-    .left   { transform: rotateY(-90deg) translateZ(100px); }
-    .top    { transform: rotateX(90deg) translateZ(100px); }
-    .bottom { transform: rotateX(-90deg) translateZ(100px); }
+    /* Front - brightest */
+    .front  { 
+      transform: translateZ(100px);
+      background: linear-gradient(135deg, #505050 0%, #3c3c3c 100%);
+      box-shadow: 
+        inset -20px -20px 40px rgba(0,0,0,0.3),
+        inset 10px 10px 20px rgba(255,255,255,0.08);
+    }
+    
+    /* Back - darkest */
+    .back   { 
+      transform: rotateY(180deg) translateZ(100px);
+      background: linear-gradient(135deg, #0f0f0f 0%, #0a0a0a 100%);
+      border-color: rgba(255,255,255,0.2);
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.7);
+    }
+    
+    /* Right - medium */
+    .right  { 
+      transform: rotateY(90deg) translateZ(100px);
+      background: linear-gradient(to left, #323232 0%, #232323 100%);
+      box-shadow: 
+        inset 15px 0 30px rgba(0,0,0,0.4),
+        inset -8px -8px 20px rgba(255,255,255,0.04);
+    }
+    
+    /* Left - medium */
+    .left   { 
+      transform: rotateY(-90deg) translateZ(100px);
+      background: linear-gradient(to right, #323232 0%, #232323 100%);
+      box-shadow: 
+        inset -15px 0 30px rgba(0,0,0,0.4),
+        inset 8px -8px 20px rgba(255,255,255,0.04);
+    }
+    
+    /* Top - bright */
+    .top    { 
+      transform: rotateX(90deg) translateZ(100px);
+      background: linear-gradient(180deg, #5a5a5a 0%, #414141 100%);
+      border-color: rgba(255,255,255,0.45);
+      box-shadow: 
+        inset 0 15px 35px rgba(0,0,0,0.3),
+        inset 0 -8px 20px rgba(255,255,255,0.06);
+    }
+    
+    /* Bottom - darker */
+    .bottom { 
+      transform: rotateX(-90deg) translateZ(100px);
+      background: linear-gradient(180deg, #191919 0%, #121212 100%);
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+    }
   </style>
 </head>
 <body>
+
+  <div id="torch"></div>
 
   <div id="box">
     <div class="face front"></div>
