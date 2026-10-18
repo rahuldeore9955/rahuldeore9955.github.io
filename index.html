@@ -24,10 +24,10 @@
       inset: 0;
       pointer-events: none;
       background: radial-gradient(
-        circle 400px at 50% 40%,
-        rgba(255, 255, 255, 0.2) 0%,
-        rgba(200, 200, 200, 0.1) 30%,
-        rgba(100, 100, 100, 0.04) 50%,
+        circle 400px at var(--torch-x, 50%) var(--torch-y, 50%),
+        rgba(255, 255, 255, 0.24) 0%,
+        rgba(200, 200, 200, 0.11) 30%,
+        rgba(100, 100, 100, 0.05) 50%,
         transparent 70%
       );
       z-index: 0;
@@ -40,6 +40,9 @@
       transform-style: preserve-3d;
       cursor: grab;
       z-index: 1;
+      touch-action: none;
+      user-select: none;
+      will-change: transform;
     }
 
     #box:active {
@@ -124,64 +127,53 @@
   <script>
     const box = document.getElementById('box');
 
-    let isDragging = false;
+    let activePointerId = null;
     let startX = 0, startY = 0;
     let rotX = -20, rotY = 30;
 
-    // Mouse down - start drag
-    box.addEventListener('mousedown', e => {
-      isDragging = true;
+    function updateScene() {
+      // The glow stays fixed behind the centred cube.
+      box.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    }
+
+    function moveCube(clientX, clientY) {
+      const deltaX = clientX - startX;
+      const deltaY = clientY - startY;
+
+      // Horizontal movement turns the cube left/right; vertical movement tilts it.
+      rotY += deltaX * 0.5;
+      rotX -= deltaY * 0.5;
+
+      startX = clientX;
+      startY = clientY;
+      updateScene();
+    }
+
+    // Pointer events cover mouse, touch, and pen, and pointer capture keeps
+    // the drag reliable even if the pointer leaves the cube.
+    box.addEventListener('pointerdown', e => {
+      activePointerId = e.pointerId;
       startX = e.clientX;
       startY = e.clientY;
+      box.setPointerCapture(e.pointerId);
     });
 
-    // Mouse move - rotate while dragging
-    document.addEventListener('mousemove', e => {
-      if (!isDragging) return;
-
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-
-      rotY = rotY + deltaX * 0.5;
-      rotX = rotX - deltaY * 0.5;
-
-      box.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-
-      startX = e.clientX;
-      startY = e.clientY;
+    box.addEventListener('pointermove', e => {
+      if (e.pointerId !== activePointerId) return;
+      moveCube(e.clientX, e.clientY);
     });
 
-    // Mouse up - stop drag
-    document.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
+    function stopDragging(e) {
+      if (e.pointerId !== activePointerId) return;
+      activePointerId = null;
+      if (box.hasPointerCapture(e.pointerId)) box.releasePointerCapture(e.pointerId);
+    }
 
-    // Touch support
-    box.addEventListener('touchstart', e => {
-      isDragging = true;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      e.preventDefault();
-    });
+    box.addEventListener('pointerup', stopDragging);
+    box.addEventListener('pointercancel', stopDragging);
 
-    document.addEventListener('touchmove', e => {
-      if (!isDragging) return;
-      const deltaX = e.touches[0].clientX - startX;
-      const deltaY = e.touches[0].clientY - startY;
-      rotY = rotY + deltaX * 0.5;
-      rotX = rotX - deltaY * 0.5;
-      box.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      e.preventDefault();
-    });
-
-    document.addEventListener('touchend', () => {
-      isDragging = false;
-    });
-
-    // Initial rotation
-    box.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    // Initial position and rotation.
+    updateScene();
   </script>
 </body>
 </html>
