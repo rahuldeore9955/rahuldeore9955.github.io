@@ -9,24 +9,36 @@
   align-items: center;
   justify-content: center;
   background: #000;
-  perspective: 800px;
+  /* Cube scales with the smaller side of the screen, so it fits phones
+     in portrait and landscape as well as large desktops. */
+  --cube-size: clamp(120px, 45vmin, 320px);
+  /* Perspective tracks the cube size so it looks the same at every size. */
+  perspective: calc(var(--cube-size) * 4);
+  /* The whole scene is the drag area, so small screens don't need a precise
+     touch on the cube. touch-action: none stops the page scrolling or
+     zooming while dragging. */
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.eclipse-scene.is-dragging {
+  cursor: grabbing;
 }
 
 .eclipse-cube {
   --cube-half: calc(var(--cube-size) / 2);
   position: relative;
+  flex: none;
   width: var(--cube-size);
   height: var(--cube-size);
   transform-style: preserve-3d;
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
   will-change: transform;
   outline: none;
-}
-
-.eclipse-cube:active {
-  cursor: grabbing;
 }
 
 .eclipse-cube:focus-visible {

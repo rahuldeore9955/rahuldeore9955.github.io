@@ -10,7 +10,7 @@ const KEY_STEP = 10;          // degrees per arrow-key press
  * A solid black 3D cube on a black background.
  * Drag (mouse, touch or pen) to rotate; arrow keys also rotate it when focused.
  */
-export default function EclipseCube({ size = 200, initialRotation = { x: -20, y: 30 } }) {
+export default function EclipseCube({ size, initialRotation = { x: -20, y: 30 } }) {
   const cubeRef = useRef(null);
   const rotation = useRef({ x: initialRotation.x, y: initialRotation.y });
   const drag = useRef({ pointerId: null, lastX: 0, lastY: 0 });
@@ -28,9 +28,14 @@ export default function EclipseCube({ size = 200, initialRotation = { x: -20, y:
   }, [applyRotation]);
 
   const handlePointerDown = (e) => {
+    // Track one pointer at a time so a second finger doesn't make the cube jump.
+    if (drag.current.pointerId !== null) return;
+    // Ignore right/middle mouse buttons.
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     drag.current = { pointerId: e.pointerId, lastX: e.clientX, lastY: e.clientY };
-    // Pointer capture keeps the drag reliable even if the pointer leaves the cube.
+    // Pointer capture keeps the drag reliable even if the pointer leaves the scene.
     e.currentTarget.setPointerCapture(e.pointerId);
+    e.currentTarget.classList.add('is-dragging');
   };
 
   const handlePointerMove = (e) => {
@@ -48,6 +53,7 @@ export default function EclipseCube({ size = 200, initialRotation = { x: -20, y:
   const stopDragging = (e) => {
     if (e.pointerId !== drag.current.pointerId) return;
     drag.current.pointerId = null;
+    e.currentTarget.classList.remove('is-dragging');
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
@@ -67,18 +73,23 @@ export default function EclipseCube({ size = 200, initialRotation = { x: -20, y:
   };
 
   return (
-    <section className="eclipse-scene" aria-label="Interactive 3D cube">
+    <section
+      className="eclipse-scene"
+      aria-label="Interactive 3D cube"
+      // Without a size prop the cube scales with the screen (see the CSS).
+      style={size ? { '--cube-size': `${size}px` } : undefined}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={stopDragging}
+      onPointerCancel={stopDragging}
+      onLostPointerCapture={stopDragging}
+    >
       <div
         ref={cubeRef}
         className="eclipse-cube"
-        style={{ '--cube-size': `${size}px` }}
         role="img"
         aria-label="3D cube. Drag or use the arrow keys to rotate it."
         tabIndex={0}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={stopDragging}
-        onPointerCancel={stopDragging}
         onKeyDown={handleKeyDown}
       >
         {FACES.map((name) => (
