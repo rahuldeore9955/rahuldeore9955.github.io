@@ -35,12 +35,21 @@
 }
 
 /* Solid black faces, no lighting or shadows. A thin edge keeps the
-   cube's shape visible against the black background. */
+   cube's shape visible against the black background.
+   The cube is convex, so faces pointing away from the viewer are never
+   visible. Hiding them stops back faces from z-fighting with the front
+   edges, which is what made the edges look dashed. */
 .eclipse-face {
   position: absolute;
   inset: 0;
+  box-sizing: border-box;
   background: #000;
   border: 1px solid rgba(255, 255, 255, 0.85);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* A transparent outline makes Chromium anti-alias the edges of
+     3D-transformed elements, so diagonal edges render smooth. */
+  outline: 1px solid transparent;
 }
 
 .eclipse-face--front  { transform: translateZ(var(--cube-half)); }
